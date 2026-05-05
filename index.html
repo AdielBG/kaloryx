@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1D9E75">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Kaloryx">
+  <title>Kaloryx by ABG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════════════════════════
+       AUTH SCREEN
+  ══════════════════════════════ -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-logo">Kalory<span class="dot">x</span></div>
+    <div class="auth-by">BY ABG</div>
+    <div class="auth-card">
+      <div class="auth-title">Bienvenido</div>
+      <div class="auth-sub">Inicia sesión o crea tu cuenta para comenzar tu seguimiento fitness.</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="authTab('login',this)">Iniciar sesión</button>
+        <button class="auth-tab" onclick="authTab('register',this)">Crear cuenta</button>
+      </div>
+      <div class="auth-err" id="auth-err"></div>
+      <div class="auth-ok"  id="auth-ok"></div>
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" id="auth-email" placeholder="tu@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="auth-pass" placeholder="••••••••">
+      </div>
+      <div class="form-group" id="auth-pass2-wrap" style="display:none">
+        <label class="form-label">Confirmar contraseña</label>
+        <input type="password" id="auth-pass2" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" id="auth-btn" onclick="doAuth()">Iniciar sesión</button>
+      <div style="margin-top:14px;text-align:center">
+        <button class="btn-ghost" style="width:auto;padding:8px 24px;font-size:12px" onclick="doGoogle()">
+          Continuar con Google
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       MAIN APP
+  ══════════════════════════════ -->
+  <div id="main-app" style="display:none">
+
+    <header class="kx-header">
+      <div class="kx-brand">
+        <div class="kx-brand-name">Kalory<span class="dot">x</span></div>
+        <div class="kx-brand-by">BY ABG</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="theme-btn" onclick="toggleTheme()">
+          <span id="theme-dot">🌙</span>
+          <span id="theme-label">Oscuro</span>
+        </button>
+        <button class="btn-logout" onclick="doLogout()">Salir</button>
+      </div>
+    </header>
+
+    <div class="kx-datebar" id="kx-date"></div>
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="sec-dashboard">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon-row">
+            <div class="metric-icon green">🍽️</div>
+            <span class="metric-type">Consumidas</span>
+          </div>
+          <div class="metric-val"><span id="d-consumed">0</span><span class="metric-unit"> kcal</span></div>
+          <div class="metric-bar"><div class="metric-fill" id="d-bar-c" style="background:var(--kx-green);width:0%"></div></div>
+          <div class="metric-pct"><span id="d-pct-c">0</span>% de tu meta</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon-row">
+            <div class="metric-icon blue">🔥</div>
+            <span class="metric-type">Quemadas</span>
+          </div>
+          <div class="metric-val"><span id="d-burned">0</span><span class="metric-unit"> kcal</span></div>
+          <div class="metric-bar"><div class="metric-fill" id="d-bar-b" style="background:var(--kx-blue);width:0%"></div></div>
+          <div class="metric-pct"><span id="d-wcount">0</span> entrenamiento(s)</div>
+        </div>
+      </div>
+
+      <div class="balance-hero" id="d-hero">
+        <div class="balance-hero-label">Balance neto del día</div>
+        <div class="balance-hero-val" id="d-net-val">—</div>
+        <div class="balance-hero-sub" id="d-net-sub">Completa tu perfil para ver el balance</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Desglose calórico</div>
+        <div class="bal-row"><span>Consumido</span><span class="bal-val" id="d-dc">0 kcal</span></div>
+        <div class="bal-row"><span>Quemado en entrenos</span><span class="bal-val blue" id="d-db">0 kcal</span></div>
+        <div class="bal-row"><span>Metabolismo basal (BMR)</span><span class="bal-val" id="d-dbmr">—</span></div>
+        <div class="bal-row"><span>Meta diaria</span><span class="bal-val green" id="d-dmeta">—</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Comidas de hoy</div>
+        <div id="d-foods"><div class="empty">Sin comidas registradas</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Entrenamientos de hoy</div>
+        <div id="d-workouts"><div class="empty">Sin entrenamientos</div></div>
+      </div>
+    </div>
+
+    <!-- COMIDAS -->
+    <div class="section" id="sec-food">
+      <div class="tabs">
+        <button class="tab active" onclick="foodTab('manual',this)">Manual</button>
+        <button class="tab" onclick="foodTab('search',this)">Buscar</button>
+        <button class="tab" onclick="foodTab('ai',this)">IA</button>
+        <button class="tab" onclick="foodTab('photo',this)">📷 Foto</button>
+      </div>
+
+      <!-- Manual -->
+      <div id="ft-manual">
+        <div class="card">
+          <div class="card-title">Registrar comida</div>
+          <div class="form-group"><label class="form-label">Alimento</label><input type="text" id="f-name" placeholder="Ej: Arroz con pollo"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Calorías (kcal)</label><input type="number" id="f-cal" placeholder="350" min="0"></div>
+            <div class="form-group"><label class="form-label">Momento</label>
+              <select id="f-moment"><option>Desayuno</option><option>Almuerzo</option><option>Merienda</option><option>Cena</option></select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="addFoodManual()">Agregar comida</button>
+        </div>
+      </div>
+
+      <!-- Buscar (Open Food Facts) -->
+      <div id="ft-search" style="display:none">
+        <div class="card">
+          <div class="card-title">Buscar alimento</div>
+          <div class="form-group">
+            <label class="form-label">Nombre del alimento</label>
+            <input type="text" id="search-q" placeholder="Ej: Avena, Pechuga de pollo..." oninput="debounceSearch()">
+            <div class="search-results" id="search-results"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Momento</label>
+            <select id="search-moment"><option>Desayuno</option><option>Almuerzo</option><option>Merienda</option><option>Cena</option></select>
+          </div>
+          <div class="ai-result-box" id="search-selected" style="display:none">
+            <div class="ai-result-name" id="ss-name"></div>
+            <div class="ai-result-note" id="ss-note"></div>
+            <div class="ai-result-cal"  id="ss-cal"></div>
+            <div style="height:10px"></div>
+            <button class="btn-primary" onclick="confirmSearch()">Confirmar y agregar</button>
+          </div>
+          <div class="ai-hint" style="margin-top:8px">Datos de Open Food Facts — base de datos abierta con millones de alimentos</div>
+        </div>
+      </div>
+
+      <!-- IA texto (Gemini) -->
+      <div id="ft-ai" style="display:none">
+        <div class="card">
+          <div class="card-title">Estimar con Gemini AI</div>
+          <div class="form-group"><label class="form-label">Describe lo que comiste</label>
+            <input type="text" id="ai-desc" placeholder="Ej: Un plato de pasta con salsa roja y queso">
+          </div>
+          <div class="form-group"><label class="form-label">Momento</label>
+            <select id="ai-moment"><option>Desayuno</option><option>Almuerzo</option><option>Merienda</option><option>Cena</option></select>
+          </div>
+          <button class="btn-ai" id="ai-text-btn" onclick="estimateAI()"><span>✦</span> Estimar con Gemini AI</button>
+          <div class="ai-hint">Gemini analizará tu descripción y estimará las calorías automáticamente</div>
+          <div class="ai-result-box" id="ai-text-result" style="display:none">
+            <div class="ai-result-name" id="ai-r-name"></div>
+            <div class="ai-result-note" id="ai-r-note"></div>
+            <div class="ai-result-cal"  id="ai-r-cal"></div>
+            <div style="height:12px"></div>
+            <button class="btn-primary" onclick="confirmAI()">Confirmar y agregar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Foto (Gemini Vision) -->
+      <div id="ft-photo" style="display:none">
+        <div class="card">
+          <div class="card-title">Analizar foto</div>
+          <div class="photo-zone" id="photo-zone">
+            <input type="file" accept="image/*" capture="environment" id="photo-input" onchange="handlePhoto(event)">
+            <div class="photo-zone-emoji">📷</div>
+            <div class="photo-zone-title">Tomar foto o subir imagen</div>
+            <div class="photo-zone-sub">Gemini AI identificará los alimentos y estimará calorías</div>
+          </div>
+          <img id="photo-prev" class="photo-preview" alt="">
+          <div class="form-group"><label class="form-label">Momento</label>
+            <select id="photo-moment"><option>Desayuno</option><option>Almuerzo</option><option>Merienda</option><option>Cena</option></select>
+          </div>
+          <button class="btn-ai" id="photo-btn" onclick="analyzePhoto()" style="display:none"><span>✦</span> Analizar con Gemini AI</button>
+          <div class="ai-result-box" id="photo-result" style="display:none">
+            <div class="ai-result-name" id="ph-r-name"></div>
+            <div class="ai-result-note" id="ph-r-note"></div>
+            <div class="ai-result-cal"  id="ph-r-cal"></div>
+            <div style="height:12px"></div>
+            <button class="btn-primary" onclick="confirmPhoto()">Confirmar y agregar</button>
+            <div style="height:8px"></div>
+            <button class="btn-ghost" onclick="resetPhoto()">Tomar otra foto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista comidas -->
+      <div class="card">
+        <div class="card-title">Comidas de hoy</div>
+        <div id="food-list"><div class="empty">Sin comidas registradas</div></div>
+        <div class="total-row"><span>Total</span><span id="food-total">0 kcal</span></div>
+      </div>
+    </div>
+
+    <!-- ENTRENAMIENTOS -->
+    <div class="section" id="sec-workout">
+      <div class="card">
+        <div class="card-title">Registrar entrenamiento</div>
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <div class="chip-row" id="type-chips">
+            <button class="chip on" onclick="pickType(this,'Pesas')">Pesas</button>
+            <button class="chip" onclick="pickType(this,'Cardio')">Cardio</button>
+            <button class="chip" onclick="pickType(this,'Calistenia')">Calistenia</button>
+            <button class="chip" onclick="pickType(this,'Funcional')">Funcional</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Actividad específica</label>
+          <input type="text" id="w-name" placeholder="Escribe o elige una sugerencia">
+          <div class="suggestions" id="w-sugs"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duración</label>
+          <div class="dur-grid">
+            <div>
+              <input type="number" id="w-hrs" placeholder="0" min="0" max="12" oninput="calcDur()" style="text-align:center">
+              <div class="dur-sub">Horas</div>
+            </div>
+            <div class="dur-sep">:</div>
+            <div>
+              <input type="number" id="w-mins" placeholder="0" min="0" max="59" oninput="calcDur()" style="text-align:center">
+              <div class="dur-sub">Minutos</div>
+            </div>
+          </div>
+          <div class="dur-total" id="dur-total"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Intensidad</label>
+          <div class="chip-row" id="int-chips">
+            <button class="chip" onclick="pickInt(this,'low')">Baja</button>
+            <button class="chip on" onclick="pickInt(this,'med')">Media</button>
+            <button class="chip" onclick="pickInt(this,'high')">Alta</button>
+          </div>
+        </div>
+        <div class="burn-box" id="burn-box">
+          <span class="burn-label">🔥 Quema estimada</span>
+          <span class="burn-val" id="burn-est-val">—</span>
+        </div>
+        <div class="form-group"><label class="form-label">Calorías quemadas (kcal)</label><input type="number" id="w-cal" placeholder="Se estima automáticamente" min="0"></div>
+        <div class="form-group"><label class="form-label">Notas (opcional)</label><input type="text" id="w-notes" placeholder="Ej: 4 series × 10 reps..."></div>
+        <button class="btn-primary" onclick="addWorkout()">Agregar entrenamiento</button>
+      </div>
+      <div id="workout-list"></div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="section" id="sec-profile">
+      <div class="banner" id="save-banner">✓ Perfil guardado correctamente</div>
+      <div class="profile-hero">
+        <div class="avatar" id="p-avatar">?</div>
+        <div class="p-disp-name" id="p-disp-name">Tu nombre</div>
+        <div class="p-disp-goal" id="p-disp-goal">Sin objetivo definido</div>
+        <div class="profile-stats">
+          <div class="pstat"><div class="pstat-val" id="p-s-age">—</div><div class="pstat-lbl">Años</div></div>
+          <div class="pstat"><div class="pstat-val" id="p-s-weight">—</div><div class="pstat-lbl">Peso kg</div></div>
+          <div class="pstat"><div class="pstat-val" id="p-s-height">—</div><div class="pstat-lbl">Altura cm</div></div>
+        </div>
+      </div>
+      <div class="bmr-card">
+        <div>
+          <div class="bmr-left-title">Metabolismo basal (BMR)</div>
+          <div class="bmr-left-sub">Calorías quemadas en reposo</div>
+        </div>
+        <div><span class="bmr-big" id="p-bmr-val">—</span><span class="bmr-unit"> kcal</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Datos personales</div>
+        <div class="form-group"><label class="form-label">Nombre completo</label><input type="text" id="p-name" placeholder="Tu nombre"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Edad</label><input type="number" id="p-age" placeholder="30" min="10" max="100" oninput="recalcBMR()"></div>
+          <div class="form-group"><label class="form-label">Sexo</label>
+            <select id="p-sex" onchange="recalcBMR()">
+              <option value="">—</option><option value="M">Masculino</option><option value="F">Femenino</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Peso (kg)</label><input type="number" id="p-weight" placeholder="75" step="0.1" oninput="recalcBMR()"></div>
+          <div class="form-group"><label class="form-label">Altura (cm)</label><input type="number" id="p-height" placeholder="175" oninput="recalcBMR()"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Objetivo y actividad</div>
+        <div class="form-group"><label class="form-label">Objetivo principal</label>
+          <select id="p-goal">
+            <option value="">Seleccionar</option>
+            <option>Mantenerme en forma</option>
+            <option>Perder peso / quemar grasa</option>
+            <option>Ganar músculo / masa</option>
+            <option>Mejorar resistencia / cardio</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Nivel de actividad</label>
+          <select id="p-activity" onchange="recalcBMR()">
+            <option value="1.2">Sedentario</option>
+            <option value="1.375">Ligeramente activo (1–3 días/sem)</option>
+            <option value="1.55" selected>Moderadamente activo (3–5 días/sem)</option>
+            <option value="1.725">Muy activo (6–7 días/sem)</option>
+            <option value="1.9">Extra activo (atleta)</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Meta calórica diaria (kcal)</label><input type="number" id="p-calmeta" placeholder="Se calcula automáticamente" min="1000"></div>
+        <div class="hint">Puedes ajustar la meta o dejar que se calcule según tu perfil y actividad.</div>
+        <button class="btn-primary" onclick="saveProfile()">Guardar perfil</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Historial de peso</div>
+        <div class="form-row" style="align-items:flex-end;margin-bottom:12px">
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Peso hoy (kg)</label><input type="number" id="w-today" placeholder="75.5" step="0.1" min="30"></div>
+          <button class="btn-primary" style="height:42px;margin-bottom:0" onclick="logWeight()">Registrar</button>
+        </div>
+        <div id="weight-log"><div class="empty" style="padding:12px 0">Sin registros aún</div></div>
+      </div>
+    </div>
+
+    <nav class="kx-nav">
+      <button class="nav-btn active" id="nav-dashboard" onclick="goTo('dashboard',this)">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="2" width="8" height="8" rx="2" fill="currentColor"/><rect x="12" y="2" width="8" height="8" rx="2" fill="currentColor" opacity=".4"/><rect x="2" y="12" width="8" height="8" rx="2" fill="currentColor" opacity=".4"/><rect x="12" y="12" width="8" height="8" rx="2" fill="currentColor" opacity=".4"/></svg>
+        Inicio
+      </button>
+      <button class="nav-btn" id="nav-food" onclick="goTo('food',this)">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M8 11h6M11 8v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Comidas
+      </button>
+      <button class="nav-btn" id="nav-workout" onclick="goTo('workout',this)">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="4.5" cy="11" r="2" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="11" r="2" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 11h2m5 0h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="8.5" y="8" width="5" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/></svg>
+        Entrenos
+      </button>
+      <button class="nav-btn" id="nav-profile" onclick="goTo('profile',this)">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M4 19c0-3.866 3.134-6 7-6s7 2.134 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Perfil
+      </button>
+    </nav>
+
+  </div><!-- /main-app -->
+</div><!-- /app -->
+
+<script src="js/app.js"></script>
+</body>
+</html>
