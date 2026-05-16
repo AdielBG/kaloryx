@@ -1,30 +1,4 @@
 {
-
-  
-
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/gemini.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/gemini",
-      "dest": "/api/gemini.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-
-  ],
-
   "functions": {
     "api/gemini.js": {
       "memory": 256,
@@ -34,8 +8,4 @@
   "rewrites": [
     { "source": "/api/gemini", "destination": "/api/gemini" }
   ]
-  
-
 }
-
-
