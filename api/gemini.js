@@ -1,6 +1,3 @@
-// api/gemini.js
-// Vercel Serverless Function — Gemini AI Proxy (CommonJS)
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -10,7 +7,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
-  if (!GEMINI_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY not set in Vercel environment variables' });
+  if (!GEMINI_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
 
   try {
     const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
@@ -23,7 +20,6 @@ module.exports = async function handler(req, res) {
     if (!response.ok) return res.status(response.status).json(data);
     return res.status(200).json(data);
   } catch (err) {
-    console.error('Gemini proxy error:', err);
     return res.status(500).json({ error: err.message });
   }
 };
